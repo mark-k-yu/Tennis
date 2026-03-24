@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if tournament else 'Add' }} Tournament – Tennis Tracker{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('tournaments') }}">Tournaments</a></li>
+        <li class="breadcrumb-item active">{{ 'Edit' if tournament else 'Add' }} Tournament</li>
+      </ol>
+    </nav>
+
+    <div class="card form-card p-4">
+      <h4 class="fw-bold mb-4">
+        <i class="bi bi-calendar-plus me-2 text-success"></i>
+        {{ 'Edit Tournament' if tournament else 'Add New Tournament' }}
+      </h4>
+
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Tournament Name <span class="text-danger">*</span></label>
+          <input type="text" name="name" class="form-control"
+                 value="{{ tournament.name if tournament else '' }}"
+                 placeholder="e.g. USTA Spring Championships" required />
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Date <span class="text-danger">*</span></label>
+            <input type="date" name="date" class="form-control"
+                   value="{{ tournament.date.strftime('%Y-%m-%d') if tournament else '' }}" required />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Location</label>
+            <input type="text" name="location" class="form-control"
+                   value="{{ tournament.location if tournament else '' }}"
+                   placeholder="City, State" />
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Surface</label>
+            <select name="surface" class="form-select">
+              <option value="">– Select –</option>
+              {% for s in ['Hard', 'Clay', 'Grass', 'Indoor Hard', 'Indoor Clay', 'Carpet'] %}
+                <option value="{{ s }}" {{ 'selected' if tournament and tournament.surface == s else '' }}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Tournament Level</label>
+            <input type="text" name="level" class="form-control"
+                   value="{{ tournament.level if tournament else '' }}"
+                   placeholder="e.g. USTA L3, UTR, Local" />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Draw Size</label>
+          <input type="number" name="draw_size" class="form-control" min="2"
+                 value="{{ tournament.draw_size if tournament else '' }}"
+                 placeholder="e.g. 16" />
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Notes</label>
+          <textarea name="notes" class="form-control" rows="2"
+                    placeholder="Any notes about this tournament…">{{ tournament.notes if tournament else '' }}</textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success fw-semibold">
+            <i class="bi bi-check-circle me-1"></i> {{ 'Save Changes' if tournament else 'Add Tournament' }}
+          </button>
+          <a href="{{ url_for('tournament_detail', tid=tournament.id) if tournament else url_for('tournaments') }}"
+             class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

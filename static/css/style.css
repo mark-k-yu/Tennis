@@ -1,0 +1,91 @@
+/* ---- Court color theme ---- */
+:root {
+  --court-green: #2d6a4f;
+  --court-clay: #c0552a;
+  --court-blue: #1565c0;
+  --win-green: #198754;
+  --loss-red: #dc3545;
+}
+
+.bg-court { background-color: var(--court-green); }
+
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ---- Stat cards ---- */
+.stat-card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  transition: transform .15s;
+}
+.stat-card:hover { transform: translateY(-2px); }
+
+.stat-value {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* ---- Win / loss badges ---- */
+.badge-win  { background-color: var(--win-green); }
+.badge-loss { background-color: var(--loss-red); }
+
+/* ---- Surface badges ---- */
+.surface-hard    { background-color: var(--court-blue); color: #fff; }
+.surface-clay    { background-color: var(--court-clay); color: #fff; }
+.surface-grass   { background-color: #4caf50; color: #fff; }
+.surface-indoor  { background-color: #795548; color: #fff; }
+.surface-unknown { background-color: #9e9e9e; color: #fff; }
+
+/* ---- Match rows ---- */
+.match-row-win  { border-left: 4px solid var(--win-green); }
+.match-row-loss { border-left: 4px solid var(--loss-red); }
+
+/* ---- Progress bar overrides ---- */
+.progress { border-radius: 8px; }
+
+/* ---- Tournament card ---- */
+.tournament-card {
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+  transition: box-shadow .15s;
+}
+.tournament-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+
+/* ---- Charts ---- */
+.chart-container { position: relative; }
+
+/* ---- Forms ---- */
+.form-card {
+  max-width: 680px;
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+/* ---- Score display ---- */
+.score-badge {
+  font-family: monospace;
+  font-size: .95rem;
+  background: #e9ecef;
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+/* ---- Win rate circle ---- */
+.win-rate-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
+  background: var(--win-green);
+  margin: 0 auto;
+}

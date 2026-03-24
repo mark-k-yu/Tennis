@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}{{ tournament.name }} – Tennis Tracker{% endblock %}
+{% block content %}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-1">
+        <li class="breadcrumb-item"><a href="{{ url_for('tournaments') }}">Tournaments</a></li>
+        <li class="breadcrumb-item active">{{ tournament.name }}</li>
+      </ol>
+    </nav>
+    <h2 class="fw-bold mb-1">{{ tournament.name }}</h2>
+    <div class="text-muted">
+      <i class="bi bi-calendar me-1"></i>{{ tournament.date.strftime('%B %d, %Y') }}
+      {% if tournament.location %}
+        &nbsp;&bull;&nbsp;<i class="bi bi-geo-alt me-1"></i>{{ tournament.location }}
+      {% endif %}
+      {% if tournament.surface %}
+        &nbsp;&bull;&nbsp;
+        <span class="badge surface-{{ tournament.surface.lower().split()[0] }}">{{ tournament.surface }}</span>
+      {% endif %}
+      {% if tournament.level %}
+        &nbsp;&bull;&nbsp;<span class="badge bg-secondary">{{ tournament.level }}</span>
+      {% endif %}
+      {% if tournament.draw_size %}
+        &nbsp;&bull;&nbsp;Draw: {{ tournament.draw_size }}
+      {% endif %}
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('add_match', tid=tournament.id) }}" class="btn btn-success">
+      <i class="bi bi-plus-circle me-1"></i> Log Match
+    </a>
+    <a href="{{ url_for('edit_tournament', tid=tournament.id) }}" class="btn btn-outline-secondary">
+      <i class="bi bi-pencil me-1"></i> Edit
+    </a>
+    <form method="POST" action="{{ url_for('delete_tournament', tid=tournament.id) }}"
+          onsubmit="return confirm('Delete this tournament and all its matches?')">
+      <button class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
+    </form>
+  </div>
+</div>
+
+<!-- Summary stats -->
+{% set total = tournament.wins + tournament.losses %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center p-3">
+      <div class="stat-value text-success">{{ tournament.wins }}</div>
+      <div class="text-muted small">Wins</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center p-3">
+      <div class="stat-value text-danger">{{ tournament.losses }}</div>
+      <div class="text-muted small">Losses</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center p-3">
+      <div class="stat-value">{{ total }}</div>
+      <div class="text-muted small">Matches</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center p-3">
+      <div class="stat-value" style="color:var(--court-green)">
+        {% if total > 0 %}{{ (tournament.wins / total * 100) | round(0) | int }}%{% else %}–{% endif %}
+      </div>
+      <div class="text-muted small">Win Rate</div>
+    </div>
+  </div>
+</div>
+
+{% if tournament.notes %}
+  <div class="alert alert-light border mb-4">
+    <i class="bi bi-sticky me-1"></i> {{ tournament.notes }}
+  </div>
+{% endif %}
+
+<!-- Match list -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="fw-bold mb-0">Match Results</h5>
+  <a href="{{ url_for('add_match', tid=tournament.id) }}" class="btn btn-sm btn-success">
+    <i class="bi bi-plus me-1"></i> Log Match
+  </a>
+</div>
+
+{% if tournament.matches %}
+  <div class="d-flex flex-column gap-3">
+    {% for m in tournament.matches %}
+      <div class="card match-row-{{ 'win' if m.won else 'loss' }} p-3">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <div>
+            {% if m.round %}
+              <span class="badge bg-light text-dark border me-1">{{ m.round }}</span>
+            {% endif %}
+            <span class="fw-semibold">vs. {{ m.opponent_name }}</span>
+            {% if m.opponent_utr %}
+              <span class="text-muted small ms-1">(UTR {{ m.opponent_utr }})</span>
+            {% endif %}
+            <span class="badge ms-2 {{ 'badge-win' if m.won else 'badge-loss' }}">
+              {{ 'WIN' if m.won else 'LOSS' }}
+            </span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            {% if m.score %}
+              <span class="score-badge">{{ m.score }}</span>
+            {% endif %}
+            <a href="{{ url_for('edit_match', mid=m.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-2">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <form method="POST" action="{{ url_for('delete_match', mid=m.id) }}"
+                  onsubmit="return confirm('Delete this match?')">
+              <button class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        {% if m.aces is not none or m.double_faults is not none or m.first_serve_pct is not none or m.winners is not none or m.unforced_errors is not none %}
+          <div class="mt-2 d-flex flex-wrap gap-3">
+            {% if m.aces is not none %}
+              <div class="text-center">
+                <div class="fw-bold">{{ m.aces }}</div>
+                <div class="text-muted" style="font-size:.7rem">Aces</div>
+              </div>
+            {% endif %}
+            {% if m.double_faults is not none %}
+              <div class="text-center">
+                <div class="fw-bold">{{ m.double_faults }}</div>
+                <div class="text-muted" style="font-size:.7rem">DFs</div>
+              </div>
+            {% endif %}
+            {% if m.first_serve_pct is not none %}
+              <div class="text-center">
+                <div class="fw-bold">{{ m.first_serve_pct }}%</div>
+                <div class="text-muted" style="font-size:.7rem">1st Serve</div>
+              </div>
+            {% endif %}
+            {% if m.winners is not none %}
+              <div class="text-center">
+                <div class="fw-bold">{{ m.winners }}</div>
+                <div class="text-muted" style="font-size:.7rem">Winners</div>
+              </div>
+            {% endif %}
+            {% if m.unforced_errors is not none %}
+              <div class="text-center">
+                <div class="fw-bold">{{ m.unforced_errors }}</div>
+                <div class="text-muted" style="font-size:.7rem">Unforced Err.</div>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if m.notes %}
+          <div class="mt-2 text-muted small"><i class="bi bi-chat-left-text me-1"></i>{{ m.notes }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="text-center text-muted py-5 border rounded">
+    <i class="bi bi-card-list" style="font-size:2rem"></i>
+    <p class="mt-2">No matches logged yet.
+      <a href="{{ url_for('add_match', tid=tournament.id) }}">Log the first match!</a>
+    </p>
+  </div>
+{% endif %}
+
+{% endblock %}

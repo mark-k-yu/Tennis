@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – Tennis Tracker{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-0">{{ player.name }}'s Dashboard</h2>
+    {% if player.dob %}
+      <span class="text-muted">Born {{ player.dob.strftime('%B %d, %Y') }}</span>
+    {% endif %}
+    {% if player.latest_rating %}
+      {% set r = player.latest_rating %}
+      <span class="ms-3 badge bg-success">
+        {% if r.utr %}UTR {{ r.utr }}{% endif %}
+        {% if r.usta_rating %}&nbsp;| USTA {{ r.usta_rating }}{% endif %}
+      </span>
+    {% endif %}
+  </div>
+  <a href="{{ url_for('add_tournament') }}" class="btn btn-success">
+    <i class="bi bi-plus-circle me-1"></i> Add Tournament
+  </a>
+</div>
+
+<!-- Overall stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center p-3 h-100">
+      <div class="stat-value text-success">{{ total_wins }}</div>
+      <div class="text-muted small">Wins</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center p-3 h-100">
+      <div class="stat-value text-danger">{{ total_losses }}</div>
+      <div class="text-muted small">Losses</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center p-3 h-100">
+      <div class="stat-value text-primary">{{ total_matches }}</div>
+      <div class="text-muted small">Total Matches</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center p-3 h-100">
+      <div class="stat-value" style="color: var(--court-green)">{{ win_pct }}%</div>
+      <div class="text-muted small">Win Rate</div>
+    </div>
+  </div>
+</div>
+
+{% if total_matches > 0 %}
+<!-- Win rate bar -->
+<div class="card mb-4 p-3 stat-card">
+  <div class="d-flex justify-content-between mb-1">
+    <span class="fw-semibold">Overall Win Rate</span>
+    <span class="text-muted small">{{ total_wins }}W – {{ total_losses }}L</span>
+  </div>
+  <div class="progress" style="height: 16px;">
+    <div class="progress-bar bg-success" style="width: {{ win_pct }}%">{{ win_pct }}%</div>
+    <div class="progress-bar bg-danger" style="width: {{ 100 - win_pct }}%"></div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <!-- Recent tournaments -->
+  <div class="col-lg-7">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="fw-bold mb-0">Recent Tournaments</h5>
+      <a href="{{ url_for('tournaments') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+    </div>
+    {% if recent_tournaments %}
+      {% for t in recent_tournaments %}
+        <a href="{{ url_for('tournament_detail', tid=t.id) }}" class="text-decoration-none text-dark">
+          <div class="card tournament-card mb-2 p-3">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="fw-semibold">{{ t.name }}</div>
+                <div class="text-muted small">
+                  {{ t.date.strftime('%b %d, %Y') }}
+                  {% if t.location %}&nbsp;&bull;&nbsp;{{ t.location }}{% endif %}
+                </div>
+              </div>
+              <div class="text-end">
+                {% if t.surface %}
+                  <span class="badge surface-{{ t.surface.lower().split()[0] }} me-1">{{ t.surface }}</span>
+                {% endif %}
+                <div class="mt-1">
+                  <span class="badge bg-success">{{ t.wins }}W</span>
+                  <span class="badge bg-danger ms-1">{{ t.losses }}L</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    {% else %}
+      <div class="text-muted text-center py-5 border rounded">
+        <i class="bi bi-calendar-x" style="font-size:2rem"></i>
+        <p class="mt-2">No tournaments yet. <a href="{{ url_for('add_tournament') }}">Add the first one!</a></p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Win rate by surface -->
+  <div class="col-lg-5">
+    <h5 class="fw-bold mb-2">Win Rate by Surface</h5>
+    {% if surface_data %}
+      {% for s in surface_data %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between">
+            <span class="fw-semibold">{{ s.surface }}</span>
+            <span class="text-muted small">{{ s.wins }}W – {{ s.losses }}L &nbsp; {{ s.win_pct }}%</span>
+          </div>
+          <div class="progress" style="height: 12px;">
+            <div class="progress-bar bg-success" style="width: {{ s.win_pct }}%"></div>
+            <div class="progress-bar bg-danger" style="width: {{ 100 - s.win_pct }}%"></div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-muted">No data yet.</p>
+    {% endif %}
+
+    {% if player.latest_rating %}
+    <div class="mt-4">
+      <h5 class="fw-bold mb-2">Current Ratings</h5>
+      <div class="card p-3 stat-card">
+        {% set r = player.latest_rating %}
+        {% if r.utr %}
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">UTR</span>
+            <span class="fw-bold fs-5">{{ r.utr }}</span>
+          </div>
+        {% endif %}
+        {% if r.usta_rating %}
+          <div class="d-flex justify-content-between mt-1">
+            <span class="text-muted">USTA Rating</span>
+            <span class="fw-bold">{{ r.usta_rating }}</span>
+          </div>
+        {% endif %}
+        {% if r.usta_ranking %}
+          <div class="d-flex justify-content-between mt-1">
+            <span class="text-muted">USTA Ranking</span>
+            <span class="fw-bold">#{{ r.usta_ranking }}</span>
+          </div>
+        {% endif %}
+        <div class="text-muted small mt-2">As of {{ r.date.strftime('%b %d, %Y') }}</div>
+        <a href="{{ url_for('add_rating') }}" class="btn btn-sm btn-outline-success mt-2">
+          <i class="bi bi-plus me-1"></i>Update Rating
+        </a>
+      </div>
+    </div>
+    {% else %}
+    <div class="mt-4">
+      <h5 class="fw-bold mb-2">Ratings</h5>
+      <div class="card p-3 text-center text-muted">
+        <i class="bi bi-star" style="font-size:1.5rem"></i>
+        <p class="mb-1 mt-1 small">No ratings logged yet.</p>
+        <a href="{{ url_for('add_rating') }}" class="btn btn-sm btn-outline-success">
+          <i class="bi bi-plus me-1"></i>Add Rating
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

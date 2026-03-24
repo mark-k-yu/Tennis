@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if match else 'Log' }} Match – Tennis Tracker{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('tournaments') }}">Tournaments</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('tournament_detail', tid=tournament.id) }}">{{ tournament.name }}</a></li>
+        <li class="breadcrumb-item active">{{ 'Edit Match' if match else 'Log Match' }}</li>
+      </ol>
+    </nav>
+
+    <div class="card form-card p-4">
+      <h4 class="fw-bold mb-1">
+        <i class="bi bi-card-list me-2 text-success"></i>
+        {{ 'Edit Match' if match else 'Log Match' }}
+      </h4>
+      <div class="text-muted small mb-4">{{ tournament.name }} &bull; {{ tournament.date.strftime('%B %d, %Y') }}</div>
+
+      <form method="POST">
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Round</label>
+            <select name="round" class="form-select">
+              <option value="">– Select –</option>
+              {% set rounds = ['Round Robin', 'Round of 64', 'Round of 32', 'Round of 16',
+                               'Quarterfinal', 'Semifinal', 'Final',
+                               'Consolation Round 1', 'Consolation Semifinal', 'Consolation Final',
+                               'Round 1', 'Round 2', 'Round 3'] %}
+              {% for r in rounds %}
+                <option value="{{ r }}" {{ 'selected' if match and match.round == r else '' }}>{{ r }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold">Result <span class="text-danger">*</span></label>
+            <div class="d-flex gap-3 mt-2">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="won" id="wonY" value="true"
+                       {{ 'checked' if match and match.won else ('checked' if not match else '') }}>
+                <label class="form-check-label fw-semibold text-success" for="wonY">Win</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="won" id="wonN" value="false"
+                       {{ 'checked' if match and not match.won else '' }}>
+                <label class="form-check-label fw-semibold text-danger" for="wonN">Loss</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-sm-8">
+            <label class="form-label fw-semibold">Opponent Name <span class="text-danger">*</span></label>
+            <input type="text" name="opponent_name" class="form-control"
+                   value="{{ match.opponent_name if match else '' }}"
+                   placeholder="First Last" required />
+          </div>
+          <div class="col-sm-4">
+            <label class="form-label fw-semibold">Opponent UTR</label>
+            <input type="number" step="0.01" min="1" max="16.5" name="opponent_utr" class="form-control"
+                   value="{{ match.opponent_utr if match else '' }}"
+                   placeholder="e.g. 8.5" />
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Score</label>
+          <input type="text" name="score" class="form-control"
+                 value="{{ match.score if match else '' }}"
+                 placeholder="e.g. 6-3 6-4  or  4-6 7-5 6-3  or  6-3 6-7(5) 7-5" />
+          <div class="form-text">Enter sets separated by spaces. Tiebreak scores in parentheses are fine.</div>
+        </div>
+
+        <hr class="my-4" />
+        <h6 class="fw-bold text-muted mb-3">
+          <i class="bi bi-bar-chart me-1"></i> Match Stats <span class="fw-normal">(optional)</span>
+        </h6>
+
+        <div class="row g-3 mb-3">
+          <div class="col-6 col-sm-4">
+            <label class="form-label fw-semibold">Aces</label>
+            <input type="number" min="0" name="aces" class="form-control"
+                   value="{{ match.aces if match and match.aces is not none else '' }}" />
+          </div>
+          <div class="col-6 col-sm-4">
+            <label class="form-label fw-semibold">Double Faults</label>
+            <input type="number" min="0" name="double_faults" class="form-control"
+                   value="{{ match.double_faults if match and match.double_faults is not none else '' }}" />
+          </div>
+          <div class="col-6 col-sm-4">
+            <label class="form-label fw-semibold">1st Serve %</label>
+            <div class="input-group">
+              <input type="number" min="0" max="100" step="0.1" name="first_serve_pct" class="form-control"
+                     value="{{ match.first_serve_pct if match and match.first_serve_pct is not none else '' }}" />
+              <span class="input-group-text">%</span>
+            </div>
+          </div>
+          <div class="col-6 col-sm-6">
+            <label class="form-label fw-semibold">Winners</label>
+            <input type="number" min="0" name="winners" class="form-control"
+                   value="{{ match.winners if match and match.winners is not none else '' }}" />
+          </div>
+          <div class="col-6 col-sm-6">
+            <label class="form-label fw-semibold">Unforced Errors</label>
+            <input type="number" min="0" name="unforced_errors" class="form-control"
+                   value="{{ match.unforced_errors if match and match.unforced_errors is not none else '' }}" />
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Notes</label>
+          <textarea name="notes" class="form-control" rows="2"
+                    placeholder="Observations, coaching notes…">{{ match.notes if match else '' }}</textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success fw-semibold">
+            <i class="bi bi-check-circle me-1"></i> {{ 'Save Changes' if match else 'Log Match' }}
+          </button>
+          <a href="{{ url_for('tournament_detail', tid=tournament.id) }}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
