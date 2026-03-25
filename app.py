@@ -3,11 +3,17 @@ from models import db, Player, Tournament, Match, RatingHistory
 from datetime import date, datetime
 from collections import defaultdict
 import json
+import os
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tennis.db"
+
+# Support both local SQLite and production PostgreSQL (via DATABASE_URL env var)
+database_url = os.environ.get("DATABASE_URL", "sqlite:///tennis.db")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SECRET_KEY"] = "tennis-tracker-secret"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "tennis-tracker-secret-dev")
 db.init_app(app)
 
 
@@ -377,7 +383,8 @@ def add_rating():
     return render_template("add_rating.html", player=player)
 
 
+with app.app_context():
+    db.create_all()
+
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
