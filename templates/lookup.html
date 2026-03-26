@@ -5,30 +5,40 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
     <h2 class="fw-bold mb-0">Player Lookup</h2>
-    <p class="text-muted mb-0 small">Search tennisrecruiting.net for any player's rankings</p>
+    <p class="text-muted mb-0 small">Fetch any player's rankings from tennisrecruiting.net</p>
   </div>
 </div>
 
-<!-- Search form -->
+<!-- Step 1: instructions -->
+<div class="card border-0 bg-light p-4 mb-4">
+  <h6 class="fw-bold mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>How to look up a player</h6>
+  <ol class="mb-0" style="line-height:2">
+    <li>Open <a href="https://www.tennisrecruiting.net/player.asp" target="_blank">tennisrecruiting.net/player.asp <i class="bi bi-box-arrow-up-right" style="font-size:.75rem"></i></a> in a new tab</li>
+    <li>Search for the player by name</li>
+    <li>Click on their profile to open it</li>
+    <li>Copy the URL from the address bar (e.g. <code>https://www.tennisrecruiting.net/player.asp?id=195083</code>)</li>
+    <li>Paste it below and click <strong>Get Rankings</strong></li>
+  </ol>
+</div>
+
+<!-- Step 2: URL paste form -->
 <div class="card form-card p-4 mb-4">
   <form method="POST">
-    <input type="hidden" name="action" value="search" />
+    <input type="hidden" name="action" value="fetch" />
+    <input type="hidden" name="name" value="" />
+    <input type="hidden" name="location" value="" />
     <div class="row g-3 align-items-end">
-      <div class="col-sm-5">
-        <label class="form-label fw-semibold">Player Name <span class="text-danger">*</span></label>
-        <input type="text" name="name" class="form-control"
-               value="{{ query_name }}"
-               placeholder="e.g. Tyler Yu" required />
-      </div>
-      <div class="col-sm-4">
-        <label class="form-label fw-semibold">State / City <span class="text-muted fw-normal">(optional)</span></label>
-        <input type="text" name="location" class="form-control"
-               value="{{ query_location }}"
-               placeholder="e.g. NY or Chappaqua" />
+      <div class="col-sm-9">
+        <label class="form-label fw-semibold">
+          tennisrecruiting.net Profile URL <span class="text-danger">*</span>
+        </label>
+        <input type="url" name="profile_url" class="form-control font-monospace"
+               placeholder="https://www.tennisrecruiting.net/player.asp?id=195083"
+               required />
       </div>
       <div class="col-sm-3">
         <button type="submit" class="btn btn-success w-100 fw-semibold">
-          <i class="bi bi-search me-1"></i> Search
+          <i class="bi bi-bar-chart me-1"></i> Get Rankings
         </button>
       </div>
     </div>
@@ -39,37 +49,6 @@
   <div class="alert alert-warning">
     <i class="bi bi-exclamation-triangle me-1"></i> {{ error }}
   </div>
-{% endif %}
-
-<!-- Search results -->
-{% if search_results is not none %}
-  {% if search_results %}
-    <h5 class="fw-bold mb-3">
-      {{ search_results | length }} result{{ 's' if search_results | length != 1 }} found
-    </h5>
-    <div class="row g-3 mb-4">
-      {% for p in search_results %}
-        <div class="col-md-6 col-lg-4">
-          <div class="card tournament-card h-100 p-3">
-            <div class="fw-bold mb-1">{{ p.name }}</div>
-            <div class="text-muted small mb-2">
-              {% if p.location %}{{ p.location }}{% endif %}
-              {% if p.grad_year %}&nbsp;&bull;&nbsp;Class of {{ p.grad_year }}{% endif %}
-            </div>
-            <form method="POST" class="mt-auto">
-              <input type="hidden" name="action" value="fetch" />
-              <input type="hidden" name="name" value="{{ query_name }}" />
-              <input type="hidden" name="location" value="{{ query_location }}" />
-              <input type="hidden" name="profile_url" value="{{ p.profile_url }}" />
-              <button type="submit" class="btn btn-sm btn-outline-primary w-100">
-                <i class="bi bi-bar-chart me-1"></i> View Rankings
-              </button>
-            </form>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
 {% endif %}
 
 <!-- Rankings result -->
@@ -192,13 +171,5 @@
   </div>
 {% endif %}
 
-<!-- Empty state -->
-{% if not rankings and not search_results and not error %}
-  <div class="text-center text-muted py-5 border rounded">
-    <i class="bi bi-search" style="font-size:3rem"></i>
-    <h5 class="mt-3">Search for a Player</h5>
-    <p>Enter a name (and optionally a state or city) to look up rankings on tennisrecruiting.net.</p>
-  </div>
-{% endif %}
-
 {% endblock %}
+
