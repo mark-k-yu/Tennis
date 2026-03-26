@@ -4,3 +4,5 @@ SQLAlchemy==2.0.35
 Werkzeug==3.0.4
 gunicorn==22.0.0
 psycopg2-binary==2.9.9
+requests==2.32.3
+beautifulsoup4==4.12.3

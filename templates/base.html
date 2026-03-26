@@ -40,6 +40,11 @@
             <i class="bi bi-people me-1"></i>Opponents
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint == 'lookup' %}active{% endif %}" href="{{ url_for('lookup') }}">
+            <i class="bi bi-search me-1"></i>Player Lookup
+          </a>
+        </li>
         <li class="nav-item ms-lg-2">
           <a class="nav-link btn btn-sm btn-warning text-dark fw-semibold px-3" href="{{ url_for('add_tournament') }}">
             <i class="bi bi-plus-circle me-1"></i>Add Tournament

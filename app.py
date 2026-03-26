@@ -383,6 +383,60 @@ def add_rating():
     return render_template("add_rating.html", player=player)
 
 
+# ---------------------------------------------------------------------------
+# Player Lookup (tennisrecruiting.net)
+# ---------------------------------------------------------------------------
+
+@app.route("/lookup", methods=["GET", "POST"])
+def lookup():
+    player = get_player()
+    search_results = None
+    rankings = None
+    error = None
+    query_name = ""
+    query_location = ""
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        query_name = request.form.get("name", "").strip()
+        query_location = request.form.get("location", "").strip()
+
+        if action == "search":
+            if not query_name:
+                error = "Please enter a player name."
+            else:
+                try:
+                    from scraper import search_players
+                    search_results = search_players(query_name, query_location)
+                    if not search_results:
+                        error = f"No players found for '{query_name}'" + (
+                            f" in '{query_location}'" if query_location else ""
+                        ) + ". Try a broader search."
+                except Exception as e:
+                    error = f"Search failed: {e}"
+
+        elif action == "fetch":
+            profile_url = request.form.get("profile_url", "").strip()
+            if profile_url:
+                try:
+                    from scraper import get_player_rankings
+                    rankings = get_player_rankings(profile_url)
+                    if not any(rankings.get(k) for k in ("national", "wtn", "utr")):
+                        error = "Profile loaded but no ranking data was found. The page layout may have changed."
+                except Exception as e:
+                    error = f"Could not fetch profile: {e}"
+
+    return render_template(
+        "lookup.html",
+        player=player,
+        search_results=search_results,
+        rankings=rankings,
+        error=error,
+        query_name=query_name,
+        query_location=query_location,
+    )
+
+
 with app.app_context():
     db.create_all()
 
