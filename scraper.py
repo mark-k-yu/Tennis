@@ -3,13 +3,13 @@ Scraper for tennisrecruiting.net player profiles.
 Extracts Weekly Rankings: National, WTN, UTR (and other fields).
 """
 
+import os
 import re
 import requests
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://www.tennisrecruiting.net"
 
-# Browser-like headers to avoid 403
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -24,11 +24,28 @@ HEADERS = {
 
 
 def _get(url, params=None):
-    """GET with a shared session and browser headers."""
-    session = requests.Session()
-    # Touch the homepage first to pick up any cookies
-    session.get(BASE_URL, headers=HEADERS, timeout=10)
-    resp = session.get(url, params=params, headers=HEADERS, timeout=10)
+    """
+    Fetch a URL, routing through ScraperAPI when SCRAPER_API_KEY is set
+    (required on cloud servers whose IPs are blocked by tennisrecruiting.net).
+    Falls back to a direct request for local development.
+    """
+    api_key = os.environ.get("SCRAPER_API_KEY")
+    if api_key:
+        # ScraperAPI wraps the target URL and routes through residential IPs
+        proxy_url = "https://api.scraperapi.com"
+        full_url = url
+        if params:
+            import urllib.parse
+            full_url = url + "?" + urllib.parse.urlencode(params)
+        resp = requests.get(
+            proxy_url,
+            params={"api_key": api_key, "url": full_url},
+            timeout=30,
+        )
+    else:
+        session = requests.Session()
+        session.get(BASE_URL, headers=HEADERS, timeout=10)
+        resp = session.get(url, params=params, headers=HEADERS, timeout=10)
     resp.raise_for_status()
     return resp.text
 
